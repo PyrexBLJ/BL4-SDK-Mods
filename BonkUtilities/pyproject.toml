@@ -1,0 +1,12 @@
+[project]
+name = "Bonk Utilities"
+version = "1.0.0"
+authors = [{ name = "Pyrex" }]
+description = "Includes a bunch of cheaty options like godmode, noclip, game speed, killing enemies etc."
+
+[tool.sdkmod]
+name = "Bonk Utilities"
+license = {name = "MIT", url = "https://choosealicense.com/licenses/mit/" }
+supported_games = ["BL4"]
+download = "https://github.com/PyrexBLJ/BL4-SDK-Mods/raw/refs/heads/main/BonkUtilities/BonkUtilities.sdkmod"
+version = "1.0.0"
