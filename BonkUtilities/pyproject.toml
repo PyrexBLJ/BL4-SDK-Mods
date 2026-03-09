@@ -1,12 +1,12 @@
 [project]
 name = "Bonk Utilities"
-version = "1.0.0"
+version = "1.0.1"
 authors = [{ name = "Pyrex" }]
-description = "A cheat/utility mod with the following features: Options for changing the font size of the text in the game console, and an option to make the black market machine only go on cooldown after purchasing an item. Keybinds for god mode, demigod mode, noclip, infinite ammo, speeding up/slowing down the game speed, killing all spawned enemies and deleting all the items on the ground. Custom console commands for giving yourself currencies, spawning in some items and giving yourself levels. Use the buhelp console command for more info on what these do and how to use them."
+description = "A cheat/utility mod with the following features: Options for changing the font size of the text in the game console, making the black market machine only go on cooldown after purchasing an item, and teleporting to custom map waypoints. Keybinds for god mode, demigod mode, noclip, infinite ammo, speeding up/slowing down the game speed, killing all spawned enemies and deleting all the items on the ground. Custom console commands for giving yourself currencies, spawning in some items and giving yourself levels. Use the buhelp console command for more info on what these do and how to use them."
 
 [tool.sdkmod]
 name = "Bonk Utilities"
 license = {name = "MIT", url = "https://choosealicense.com/licenses/mit/" }
 supported_games = ["BL4"]
 download = "https://github.com/PyrexBLJ/BL4-SDK-Mods/raw/refs/heads/main/BonkUtilities/BonkUtilities.sdkmod"
-version = "1.0.0"
+version = "1.0.1"
