@@ -4,7 +4,7 @@ from mods_base import get_pc, command
 
 @command("buhelp", description="List commands and how to use them.")
 def Help(args: Namespace) -> None:
-    print("Commands:\n\naddcurrency [money, eridium, vaultcard1tickets, vaultcard2tickets] [amount]\ngive5levels\nspawnitems")
+    print("Commands:\n\nrun a command with -h as the only argument for more info on that specific command.\n\naddcurrency [money, eridium, vaultcard1tickets, vaultcard2tickets] [amount]\ngive5levels\nspawnitems\ncatpls [args]\n")
     return None
 
 @command("addcurrency", description="Add to these currencies: money, eridium, vaultcard1tickets, vaultcard2tickets")
@@ -59,3 +59,14 @@ def SpawnItems(args: Namespace) -> None:
     get_pc().ServerActivateDevPerk(7)
     print("[Bonk Utilities] Spawned Items")
     return None
+
+@command("catpls", description="opens a random cat pic in your browser, no real reason for this i just want to see a kitty sometimes yakno")
+def catpls(args: Namespace) -> None:
+    ksl = unrealsdk.find_class("KismetSystemLibrary").ClassDefaultObject
+    if str(args.args) == "None":
+        ksl.LaunchURL("https://cataas.com/cat")
+    else:
+        ksl.LaunchURL(f"https://cataas.com/cat/{str(args.args)}")
+    return None
+
+catpls.add_argument("args", help="[optional] this uses cat as a service so regular url stuff from that: gif for a gif, orange to get an orange cat etc, theres a breakdown on https://cataas.com").required = False

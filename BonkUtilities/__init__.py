@@ -17,6 +17,7 @@ MapTPWindow: SliderOption = SliderOption("Map Teleport Pin Window", 2.0, 0.5, 4.
 
 noclip: bool = False
 godmode: bool = False
+notarget: bool = False
 # map tp stuff
 pintime = 0
 pinlocation = None
@@ -31,6 +32,11 @@ def setConsoleFontSize(_: SliderOption, new_value: int) -> None:
 def notify(text: str) -> None:
     print(f"[Bonk Utilities] {text}")
     return None
+
+def checkCheatClass() -> None:
+    if get_pc().CheatManager == None:
+        cheatclass = unrealsdk.construct_object("OakCheatManager", get_pc())
+        get_pc().CheatManager = cheatclass
 
 @keybind("God Mode")
 def GodMode() -> None:
@@ -99,6 +105,26 @@ def InfiniteAmmo() -> None:
 def KillEnemies() -> None:
     get_pc().ServerActivateDevPerk(3)
     notify("All Enemies Killed")
+    return None
+
+@keybind("Toggle Players Only (World Freeze)")
+def PlayersOnly() -> None:
+    checkCheatClass()
+    get_pc().CheatManager.PlayersOnly()
+    notify("Toggled Players Only")
+    return None
+
+@keybind("No Target")
+def NoTarget() -> None:
+    global notarget
+    if not notarget:
+        notarget = True
+        notify("No Target On")
+    else:
+        notarget = False
+        notify("No Target Off")
+    targetinglib = unrealsdk.find_class("GbxTargetingFunctionLibrary").ClassDefaultObject
+    targetinglib.LockTargetableByAI(get_pc(), "bonk", notarget, notarget)
     return None
 
 usables = ["Health", "ArmorShard", "Ammo", "ammo", "Money", "Eridium", "ShieldBooster"]
