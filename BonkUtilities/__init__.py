@@ -9,7 +9,8 @@ import time
 from .commands import *
 
 ConsoleFontSize: SliderOption = SliderOption("Console Font Size", 18, 1, 128, 1, True, on_change = lambda _, new_value: setConsoleFontSize(_, new_value))
-#NoclipSpeed: SliderOption = SliderOption("Noclip Speed", 12000, 100, 25000, 1, True, description="I for the life of me could not get this to work")
+#NoclipType: SpinnerOption = SpinnerOption("Noclip Type", "Classic", ["Classic", "Freecam"])
+#FCNoclipSpeed: SliderOption = SliderOption("Freecam Noclip Speed Multiplier", 2.0, 0.5, 10.0, 0.1, False)
 NoBMViewCooldown: BoolOption = BoolOption("No BM Cooldown Without Purchase", True, "Yes", "No")
 MapTP: BoolOption = BoolOption("Teleport to Custom Map Pins", False, "Yes", "No", description="Quickly make and remove a pin on the map to teleport to that location, does not work if you pin a pre-existing marker on the map.")
 MapTPWindow: SliderOption = SliderOption("Map Teleport Pin Window", 2.0, 0.5, 4.0, 0.1, False, description="How long (in seconds) you have to remove the map pin after making it to teleport to it.")
@@ -75,6 +76,25 @@ def Noclip() -> None:
         #get_pc().OakCharacter.OakCharacterMovement.MaxFlySpeed = 600.0
         noclip = False
         notify("Noclip Off")
+    '''
+    if NoclipType.value == "Classic":
+        
+    elif NoclipType.value == "Freecam":
+        checkCheatClass()
+        if "DebugCameraController" not in str(get_pc()):
+            if get_pc().CheatManager.DebugCameraControllerRef == None:
+                get_pc().CheatManager.ToggleDebugCamera()
+                checkCheatClass()
+                get_pc().SpeedScale = FCNoclipSpeed.value
+                get_pc().CheatManager.ToggleDebugCamera()
+            
+            get_pc().CheatManager.ToggleDebugCamera()
+            notify("Freecam Noclip On")
+        else:
+            get_pc().OriginalControllerRef.K2_SetActorLocationAndRotation(get_pc().K2_GetActorLocation(), get_pc().K2_GetActorRotation(), False, IGNORE_STRUCT, False)
+            get_pc().CheatManager.ToggleDebugCamera()
+            notify("Freecam Noclip Off")
+    '''
     return None
 
 @keybind("Speed Up Time")
@@ -210,6 +230,7 @@ def BlackMarketUncloak(obj: UObject, args: WrappedStruct, ret: Any, func: BoundF
 @hook("/Script/OakGame.OakPlayerState:Server_CreateDiscoveryPin", Type.POST)
 def CreatePin(obj: UObject, args: WrappedStruct, ret: Any, func: BoundFunction) -> None:
     global pintime, pinlocation
+    print(args.InPinData)
     if MapTP.value:
         if args.InPinData.pintype == 1:
             pintime = time.time()

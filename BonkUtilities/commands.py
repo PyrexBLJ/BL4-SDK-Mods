@@ -1,10 +1,10 @@
 from argparse import Namespace
 import unrealsdk
-from mods_base import get_pc, command
+from mods_base import get_pc, command, ENGINE
 
 @command("buhelp", description="List commands and how to use them.")
 def Help(args: Namespace) -> None:
-    print("Commands:\n\nrun a command with -h as the only argument for more info on that specific command.\n\naddcurrency [money, eridium, vaultcard1tickets, vaultcard2tickets] [amount]\ngive5levels\nspawnitems\ncatpls [args]\n")
+    print("Commands:\n\nrun a command with -h as the only argument for more info on that specific command.\n\naddcurrency [money, eridium, vaultcard1tickets, vaultcard2tickets] [amount]\ngive5levels\nspawnitems\ncatpls [args]\nspawnitemfrompool [item pool] [amount to drop]")
     return None
 
 @command("addcurrency", description="Add to these currencies: money, eridium, vaultcard1tickets, vaultcard2tickets")
@@ -70,3 +70,14 @@ def catpls(args: Namespace) -> None:
     return None
 
 catpls.add_argument("args", help="[optional] this uses cat as a service so regular url stuff from that: gif for a gif, orange to get an orange cat etc, theres a breakdown on https://cataas.com").required = False
+
+@command("spawnitemfrompool", description="Spawn items from a loot pool, rn the only way i know to get those pools is to look thru the ncs dumps.")
+def SpawnItemFromPool(args: Namespace) -> None:
+    transform = unrealsdk.make_struct("Transform", Translation=get_pc().OakCharacter.K2_GetActorLocation(), Scale3D=unrealsdk.make_struct("Vector", X=1, Y=1, Z=1))
+    ncsip = unrealsdk.find_all("NexusConfigStoreItemPool", exact=False)[-1]
+    for i in range(int(args.count)):
+        ncsip.SpawnInventoryFromItemPool(ENGINE.GameViewport.World, get_pc().OakCharacter.GetTransform(), get_pc().OakCharacter.gamestage, args.itempool)
+    return None
+
+SpawnItemFromPool.add_argument("itempool", help="the name of the item pool to spawn loot from")
+SpawnItemFromPool.add_argument("count", help="how many items to spawn")
