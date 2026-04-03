@@ -2,6 +2,7 @@ from argparse import Namespace
 import unrealsdk
 from mods_base import get_pc, command, ENGINE
 
+
 @command("buhelp", description="List commands and how to use them.")
 def Help(args: Namespace) -> None:
     print("Commands:\n\nrun a command with -h as the only argument for more info on that specific command.\n\naddcurrency [money, eridium, vaultcard1tickets, vaultcard2tickets] [amount]\ngive5levels\nspawnitems\ncatpls [args]\nspawnitemfrompool [item pool] [amount to drop]")
@@ -73,11 +74,33 @@ catpls.add_argument("args", help="[optional] this uses cat as a service so regul
 
 @command("spawnitemfrompool", description="Spawn items from a loot pool, rn the only way i know to get those pools is to look thru the ncs dumps.")
 def SpawnItemFromPool(args: Namespace) -> None:
-    transform = unrealsdk.make_struct("Transform", Translation=get_pc().OakCharacter.K2_GetActorLocation(), Scale3D=unrealsdk.make_struct("Vector", X=1, Y=1, Z=1))
-    ncsip = unrealsdk.find_all("NexusConfigStoreItemPool", exact=False)[-1]
+    ncsip = unrealsdk.find_class("NexusConfigStoreItemPool").ClassDefaultObject
     for i in range(int(args.count)):
         ncsip.SpawnInventoryFromItemPool(ENGINE.GameViewport.World, get_pc().OakCharacter.GetTransform(), get_pc().OakCharacter.gamestage, args.itempool)
     return None
 
 SpawnItemFromPool.add_argument("itempool", help="the name of the item pool to spawn loot from")
 SpawnItemFromPool.add_argument("count", help="how many items to spawn")
+
+
+'''
+from obj_dump import dump_object
+import os
+
+@command("dumpthewholegame")
+def DumpTheWholeGame(args: Namespace) -> None:
+    print("Starting Dump")
+
+
+    path = "/home/pyrex/Documents/GarboBL4Dump/"
+    everything = unrealsdk.find_all("Object", exact=False)
+    for thing in everything:
+        if thing == thing.Class.ClassDefaultObject and not os.path.isfile(f"{path}/{thing.Class.Name}.log"):
+            f = open(f"{path}/{thing.Class.Name}.log", "+a")
+            dump_object(thing, file=f, dump_fields=True)
+            f.close()
+
+
+    print("Dump Complete!")
+    return None
+'''

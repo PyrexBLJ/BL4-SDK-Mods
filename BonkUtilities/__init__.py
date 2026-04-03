@@ -1,5 +1,5 @@
 import unrealsdk
-from mods_base import build_mod, get_pc, keybind, hook, ENGINE, SliderOption, SpinnerOption, BoolOption, Game, NestedOption, EInputEvent
+from mods_base import build_mod, get_pc, keybind, hook, ENGINE, SliderOption, SpinnerOption, BoolOption, Game, NestedOption, EInputEvent, command
 from unrealsdk.hooks import Type, Block
 from unrealsdk.unreal import BoundFunction, UObject, WrappedStruct, IGNORE_STRUCT
 from typing import Any
@@ -11,9 +11,16 @@ from .commands import *
 ConsoleFontSize: SliderOption = SliderOption("Console Font Size", 18, 1, 128, 1, True, on_change = lambda _, new_value: setConsoleFontSize(_, new_value))
 #NoclipType: SpinnerOption = SpinnerOption("Noclip Type", "Classic", ["Classic", "Freecam"])
 #FCNoclipSpeed: SliderOption = SliderOption("Freecam Noclip Speed Multiplier", 2.0, 0.5, 10.0, 0.1, False)
+VanillaSuperDash: BoolOption = BoolOption("Vanilla Super Dash", True, "Yes", "No", description="Use the regular dash logic for the superdash hotkey")
+CustomSuperDashSpeed: SliderOption = SliderOption("Custom Super Dash Speed", 1000, 1, 10000, 1, True, description="How much force to use for the non-vanilla super dash")
+SuperDashOptions: NestedOption = NestedOption("Super Dash Options ->", [VanillaSuperDash, CustomSuperDashSpeed], description="Submenu for superdash options")
 NoBMViewCooldown: BoolOption = BoolOption("No BM Cooldown Without Purchase", True, "Yes", "No")
 MapTP: BoolOption = BoolOption("Teleport to Custom Map Pins", False, "Yes", "No", description="Quickly make and remove a pin on the map to teleport to that location, does not work if you pin a pre-existing marker on the map.")
 MapTPWindow: SliderOption = SliderOption("Map Teleport Pin Window", 2.0, 0.5, 4.0, 0.1, False, description="How long (in seconds) you have to remove the map pin after making it to teleport to it.")
+MapTPReTryDelay: SliderOption = SliderOption("Map Teleport Re-teleport Delay", 3.0, 0.5, 10.0, 0.1, False, description="How long (in seconds) it will wait to attempt the teleport again incase you load in under the map (usually happens when teleporting far away)")
+MapTPHover: BoolOption = BoolOption("TP Hover", True, "Yes", "No", description="When yes: teleport way above the map and wait for the retry teleport delay to put you down on the ground, gives the map time to load in but will be slower for short distance teleports.")
+MapTPOptions: NestedOption = NestedOption("Map TP Options ->", [MapTP, MapTPWindow, MapTPReTryDelay, MapTPHover], description="Submenu for the main toggle for map teleport and options for it")
+FOV: SliderOption = SliderOption("FOV", 110, 110, 179, 1, True, description="Set an FOV Higher than normal, only takes effect if this is set higher than 110", on_change = lambda _, new_value: setFOV(_, new_value))
 
 
 noclip: bool = False
@@ -28,6 +35,12 @@ teleported = False
 
 def setConsoleFontSize(_: SliderOption, new_value: int) -> None:
     unrealsdk.find_object("Font", "/Engine/Transient.DefaultRegularFont").LegacyFontSize = int(new_value)
+    return None
+
+def setFOV(_: SliderOption, new_value: int) -> None:
+    if new_value > 110:
+        get_pc().player.BaseFOV = int(new_value)
+        get_pc().player.VehicleFOV = int(new_value)
     return None
 
 def notify(text: str) -> None:
@@ -147,6 +160,24 @@ def NoTarget() -> None:
     targetinglib.LockTargetableByAI(get_pc(), "bonk", notarget, notarget)
     return None
 
+def DoSuperDash() -> None:
+    if get_pc().OakCharacter != None:
+        get_pc().OakCharacter.Jump()
+        if VanillaSuperDash.value == True:
+            get_pc().OakCharacter.SetWantsToDash(True, 0)
+        else:
+            forward = get_pc().GetActorForwardVector()
+            impulse = unrealsdk.make_struct("Vector", X=forward.X * CustomSuperDashSpeed.value, Y=forward.Y * CustomSuperDashSpeed.value, Z=10)
+            get_pc().OakCharacter.OakCharacterMovement.AddImpulse(impulse, True)
+        time.sleep(0.01)
+        get_pc().OakCharacter.StopJumping()
+    return None
+
+@keybind("Super Dash")
+def SuperDash() -> None:
+    Thread(target=DoSuperDash).start()
+    return None
+
 usables = ["Health", "ArmorShard", "Ammo", "ammo", "Money", "Eridium", "ShieldBooster"]
 
 def GetIoTD() -> list:
@@ -230,7 +261,6 @@ def BlackMarketUncloak(obj: UObject, args: WrappedStruct, ret: Any, func: BoundF
 @hook("/Script/OakGame.OakPlayerState:Server_CreateDiscoveryPin", Type.POST)
 def CreatePin(obj: UObject, args: WrappedStruct, ret: Any, func: BoundFunction) -> None:
     global pintime, pinlocation
-    print(args.InPinData)
     if MapTP.value:
         if args.InPinData.pintype == 1:
             pintime = time.time()
@@ -244,8 +274,12 @@ def RemovePin(obj: UObject, args: WrappedStruct, ret: Any, func: BoundFunction) 
         if time.time() - pintime < MapTPWindow.value:
             pinlocation.Z = 50000
             get_pc().OakCharacter.K2_SetActorLocation(pinlocation, False, IGNORE_STRUCT, False)
-            pinlocation.Z = -1000
-            get_pc().OakCharacter.K2_SetActorLocation(pinlocation, True, IGNORE_STRUCT, False)
+            if MapTPHover.value == False:
+                pinlocation.Z = -1000
+                get_pc().OakCharacter.K2_SetActorLocation(pinlocation, True, IGNORE_STRUCT, False)
+            else:
+                get_pc().OakCharacter.OakCharacterMovement.MovementMode = 5
+                
             teleported = True
             notify(f"Teleported to {get_pc().K2_GetActorLocation()}")
     return None
@@ -254,8 +288,8 @@ def threadtp() -> None:
     global pinlocation, teleported
     if teleported:
         teleported = False
-        time.sleep(2)
-        if get_pc().OakCharacter.OakCharacterMovement.MovementMode in (3, 4, 6):
+        time.sleep(MapTPReTryDelay.value)
+        if get_pc().OakCharacter.OakCharacterMovement.MovementMode in (3, 4, 6) or MapTPHover.value:
             get_pc().OakCharacter.OakCharacterMovement.MovementMode = 1
             pinlocation.Z = 50000
             get_pc().OakCharacter.K2_SetActorLocation(pinlocation, False, IGNORE_STRUCT, False)
@@ -270,9 +304,15 @@ def MenuClose(obj: UObject, args: WrappedStruct, ret: Any, func: BoundFunction) 
         Thread(target=threadtp).start()
     return None
 
+@hook("/Script/OakGame.OakPlayerState:OnOakPawnSet", Type.POST)
+def ThisIsGonnaBeMySpawnHookForNow(obj: UObject, args: WrappedStruct, ret: Any, func: BoundFunction) -> None:
+    if FOV.value > 110:
+        get_pc().player.BaseFOV = FOV.value
+        get_pc().player.VehicleFOV = FOV.value
+    return None
 
 def Enable() -> None:
     unrealsdk.find_object("Font", "/Engine/Transient.DefaultRegularFont").LegacyFontSize = ConsoleFontSize.value
     return None
 
-build_mod(on_enable=Enable, options=[ConsoleFontSize, NoBMViewCooldown, MapTP, MapTPWindow])
+build_mod(on_enable=Enable, options=[ConsoleFontSize, NoBMViewCooldown, FOV, MapTPOptions, SuperDashOptions])
