@@ -178,79 +178,21 @@ def SuperDash() -> None:
     Thread(target=DoSuperDash).start()
     return None
 
-usables = ["Health", "ArmorShard", "Ammo", "ammo", "Money", "Eridium", "ShieldBooster"]
-
-def GetIoTD() -> list:
-    iotds = []
-    pc = get_pc()
-    for machine in unrealsdk.find_all("OakVendingMachine", False):
-
-        if not machine or machine == machine.Class.ClassDefaultObject:
-            continue
-        current_iotd = machine.GetIOTDForPlayer(pc)
-        if current_iotd:
-            iotds.append(current_iotd)
-    return iotds
-
-def get_sorted_ground_loot() -> dict:
-    current_ground_loot = {
-        "Pickups": [],
-        "Gear": [],
-    }
-    iotd_pickups = GetIoTD()
-    for inv in unrealsdk.find_all("InventoryPickup", False):
-        if not inv or inv == inv.Class.ClassDefaultObject or not inv.RootPrimitiveComponent or inv in iotd_pickups:
-            continue
-
-        inv.RootPrimitiveComponent.SetSimulatePhysics(True)
-
-        inv_str = str(inv.BodyData)
-
-        if "Pickups" in inv_str:
-            current_ground_loot["Pickups"].append(inv)
-            continue
-
-        if not inv.BodyData:
-            was_usable = False
-            num_materials = inv.RootPrimitiveComponent.GetNumMaterials()
-
-            for i in range(num_materials):
-                if was_usable:
-                    break
-
-                mat = inv.RootPrimitiveComponent.GetMaterial(i)
-                if not mat:
-                    continue
-
-                for usable in usables:
-                    if usable in mat.Name:
-                        current_ground_loot["Pickups"].append(inv)
-                        was_usable = True
-                        break
-
-            if was_usable:
-                continue
-
-        if "Gear" in inv_str:
-            current_ground_loot["Gear"].append(inv)
-            continue
-
-    return current_ground_loot
-
-
-@keybind("'Delete' Ground Items", description="I cant actually delete them so they just kinda go away under the floor for now lol, thank you yeti for the item filtering.")
+@keybind("Delete Ground Items", description="Actually deletes the items now.")
 def DeleteGroundItems() -> None:
-    loc = unrealsdk.make_struct("Vector", X=100000,Y=100000,Z=-1000000000)
-    pickups = get_sorted_ground_loot()
-    ground_loot = pickups["Pickups"] + pickups["Gear"]
-    itemcount: int = 0
-    for item in ground_loot:
-        if "default" not in str(item).lower():
-            item.RootPrimitiveComponent.SetSimulatePhysics(True)
-            item.K2_SetActorRelativeLocation(loc, False, IGNORE_STRUCT, False)
-            itemcount += 1
-    notify(f"{itemcount} Ground Items Deleted")
+    jsfl = unrealsdk.find_class("JunkSystemFunctionLibrary").ClassDefaultObject
+    box = unrealsdk.make_struct("Box", MIN=unrealsdk.make_struct("Vector", X=-1000000, Y=-1000000, Z=-1000000), MAX=unrealsdk.make_struct("Vector", X=1000000, Y=1000000, Z=1000000))
+    jsfl.DestroyJunkWithinBounds(get_pc(), box)
+    notify(f"Ground Items Deleted")
     return None
+
+@keybind("Reset Action Skill Cooldown")
+def ActionSkillCooldowns() -> None:
+    gscfas = unrealsdk.find_class("GbxSkillComponentFunctions_ActionSkill").ClassDefaultObject
+    gscfas.RefillCooldown(get_pc().OakCharacter, 1.0, 0)
+    return None
+
+
 
 @hook("/Game/InteractiveObjects/GameSystemMachines/VendingMachines/Scripts/Script_VendingMachine_BlackMarket.Script_VendingMachine_BlackMarket_C:OnDecloakCollisionEnter", Type.PRE)
 def BlackMarketUncloak(obj: UObject, args: WrappedStruct, ret: Any, func: BoundFunction) -> type[Block] | None:
