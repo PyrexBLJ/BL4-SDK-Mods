@@ -83,7 +83,7 @@ SpawnItemFromPool.add_argument("itempool", help="the name of the item pool to sp
 SpawnItemFromPool.add_argument("count", help="how many items to spawn")
 
 
-'''
+
 from obj_dump import dump_object
 import os
 
@@ -103,4 +103,3 @@ def DumpTheWholeGame(args: Namespace) -> None:
 
     print("Dump Complete!")
     return None
-'''

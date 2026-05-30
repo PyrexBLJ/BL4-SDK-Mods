@@ -128,7 +128,7 @@ def SlowDownTime() -> None:
     notify(f"Game Speed: {ENGINE.GameViewport.World.PersistentLevel.WorldSettings.TimeDilation}")
     return None
 
-@keybind("Toggle Intinite Ammo")
+@keybind("Toggle Infinite Ammo")
 def InfiniteAmmo() -> None:
     get_pc().ServerActivateDevPerk(5)
     notify("Infinite Ammo Toggled")
