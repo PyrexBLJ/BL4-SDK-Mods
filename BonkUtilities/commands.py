@@ -9,10 +9,10 @@ from unrealsdk.unreal import UObject
 
 @command("buhelp", description="List commands and how to use them.")
 def Help(args: Namespace) -> None:
-    print("Commands:\n\nrun a command with -h as the only argument for more info on that specific command.\n\naddcurrency [money, eridium, vaultcard1tickets, vaultcard2tickets] [amount]\ngive5levels\nspawnitems\nspawnitemfrompool [item pool] [amount to drop]\nfixconsole\ncatpls [args]\ncatscale\ncatscalex\ncatscaley\nnomorecat")
+    print("Commands:\n\nrun a command with -h as the only argument for more info on that specific command.\n\naddcurrency [money, eridium, vaultcard1tickets, vaultcard2tickets, vaultcard3tickets] [amount]\ngive5levels\nspawnitems\nspawnitemfrompool [item pool] [amount to drop]\nfixconsole\ncatpls [args]\ncatscale\ncatscalex\ncatscaley\nnomorecat")
     return None
 
-@command("addcurrency", description="Add to these currencies: money, eridium, vaultcard1tickets, vaultcard2tickets")
+@command("addcurrency", description="Add to these currencies: money, eridium, vaultcard1tickets, vaultcard2tickets, vaultcard3tickets")
 def AddCurrency(args: Namespace) -> None:
     if args.currency == "money":
         index = 0
@@ -46,6 +46,14 @@ def AddCurrency(args: Namespace) -> None:
             index += 1
         get_pc().Server_AddCurrency(get_pc().CurrencyManager.currencies[index].type, int(args.amount))
         print(f"[Bonk Utilities] Added {args.amount} Vault x Hunter Tickets")
+    elif args.currency == "vaultcard3tickets":
+        index = 0
+        for currency in get_pc().CurrencyManager.currencies:
+            if currency.type.Name == "VaultCard03_Tokens":
+                break
+            index += 1
+        get_pc().Server_AddCurrency(get_pc().CurrencyManager.currencies[index].type, int(args.amount))
+        print(f"[Bonk Utilities] Added {args.amount} Arcade Invaders Tickets")
     else:
         print(f"Currency {args.currency} not found.")
     return None
@@ -83,7 +91,7 @@ def FixConsole(args: Namespace) -> None:
 def getmainhudcontent() -> UObject:
     for thing in unrealsdk.find_all("UserWidget", exact=False):
         if "WBP_MainHud_C" in str(thing) and thing != thing.Class.ClassDefaultObject:
-            return thing.WidgetTree.RootWidget.GetContent()
+            return thing.WidgetTree.RootWidget
     return None
 
 catenabled: bool = False
@@ -114,7 +122,7 @@ def catpls(args: Namespace) -> None:
         getmainhudcontent().AddChildToOverlay(canvaspanel)
         canvaspanel.slot.SetHorizontalAlignment(3)
 
-        image = unrealsdk.construct_object(unrealsdk.find_class("/Script/UMG.Image"), getmainhudcontent(), "CatImage")
+        image = unrealsdk.construct_object(unrealsdk.find_class("/Script/UMG.Image"), customcanvas, "CatImage")
         customimage = image
         canvaspanel.AddChildToCanvas(image)
         image.SetBrushFromTexture(texture, False)
