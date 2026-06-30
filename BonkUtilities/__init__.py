@@ -255,7 +255,7 @@ def ThisIsGonnaBeMySpawnHookForNow(obj: UObject, args: WrappedStruct, ret: Any, 
 
 def Enable() -> None:
     unrealsdk.find_object("Font", "/Engine/Transient.DefaultRegularFont").LegacyFontSize = ConsoleFontSize.value
-    get_pc().ServerGbxConsoleCommand(unrealsdk.make_struct("ReplicatedConsoleCommandContext", CommandAndArgs="r.DebugSafeZone.TitleRatio 1"))
+    #get_pc().ServerGbxConsoleCommand(unrealsdk.make_struct("ReplicatedConsoleCommandContext", CommandAndArgs="r.DebugSafeZone.TitleRatio 1"))
     return None
 
 build_mod(on_enable=Enable, options=[ConsoleFontSize, NoBMViewCooldown, FOV, MapTPOptions, SuperDashOptions])

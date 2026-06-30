@@ -5,11 +5,12 @@ from urllib.request import urlretrieve
 import unrealsdk
 from mods_base import get_pc, command, ENGINE, SETTINGS_DIR
 from unrealsdk.unreal import UObject
+from typing import List
 
 
 @command("buhelp", description="List commands and how to use them.")
 def Help(args: Namespace) -> None:
-    print("Commands:\n\nrun a command with -h as the only argument for more info on that specific command.\n\naddcurrency [money, eridium, vaultcard1tickets, vaultcard2tickets, vaultcard3tickets] [amount]\ngive5levels\nspawnitems\nspawnitemfrompool [item pool] [amount to drop]\nfixconsole\ncatpls [args]\ncatscale\ncatscalex\ncatscaley\nnomorecat")
+    print("Commands:\n\nrun a command with -h as the only argument for more info on that specific command.\n\naddcurrency [money, eridium, vaultcard1tickets, vaultcard2tickets, vaultcard3tickets] [amount]\ngive5levels\nspawnitems\nspawnitemfrompool [item pool] [amount to drop]\nfixconsole\ncatpls [args]\ncatscale\ncatscalex\ncatscaley\ncatscreen\nnomorecat")
     return None
 
 @command("addcurrency", description="Add to these currencies: money, eridium, vaultcard1tickets, vaultcard2tickets, vaultcard3tickets")
@@ -97,6 +98,7 @@ def getmainhudcontent() -> UObject:
 catenabled: bool = False
 customcanvas: UObject = None
 customimage: UObject = None
+customscale: List[int] = [20, 20]
 
 @command("catpls", description="puts a random kitty in the corner of your screen (and sometimes a cow idk why)")
 def catpls(args: Namespace) -> None:
@@ -136,32 +138,43 @@ def catpls(args: Namespace) -> None:
 
 @command("catscale", description="the size of the cat image, by default 20")
 def catscale(args: Namespace) -> None:
-    global customcanvas
+    global customcanvas, customscale
     if customcanvas != None:
-        print(args.scale)
-        print(float(args.scale))
         customcanvas.SetRenderScale(unrealsdk.make_struct("Vector2D", X=float(args.scale), Y=float(args.scale)))
+        customscale = [float(args.scale), float(args.scale)]
     return None
 
 catscale.add_argument("scale", help="the scale of the cat")
 
 @command("catscalex", description="the size of the cat image, by default 20")
 def catscalex(args: Namespace) -> None:
-    global customcanvas
+    global customcanvas, customscale
     if customcanvas != None:
         customcanvas.SetRenderScale(unrealsdk.make_struct("Vector2D", X=float(args.scale), Y=customcanvas.RenderTransform.scale.Y))
+        customscale = [float(args.scale), customcanvas.RenderTransform.scale.Y]
     return None
 
 catscalex.add_argument("scale", help="the scale of the cat")
 
 @command("catscaley", description="the size of the cat image, by default 20")
 def catscaley(args: Namespace) -> None:
-    global customcanvas
+    global customcanvas, customscale
     if customcanvas != None:
         customcanvas.SetRenderScale(unrealsdk.make_struct("Vector2D", X=customcanvas.RenderTransform.scale.X, Y=float(args.scale)))
+        customscale = [customcanvas.RenderTransform.scale.X, float(args.scale)]
     return None
 
 catscaley.add_argument("scale", help="the scale of the cat")
+
+@command("catscreen", description="fill the screen with cat")
+def catscreen(args: Namespace) -> None:
+    global customcanvas, customscale
+    if customcanvas != None:
+        if customcanvas.RenderTransform.scale.X == customscale[0] and customcanvas.RenderTransform.scale.Y == customscale[1]:
+            customcanvas.SetRenderScale(unrealsdk.make_struct("Vector2D", X=119.0, Y=66.0))
+        else:
+            customcanvas.SetRenderScale(unrealsdk.make_struct("Vector2D", X=customscale[0], Y=customscale[1]))
+    return None
 
 @command("nomorecat", description="get rid of the cat")
 def nomorecat(args: Namespace) -> None:
