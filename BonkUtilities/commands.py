@@ -10,10 +10,10 @@ from typing import List
 
 @command("buhelp", description="List commands and how to use them.")
 def Help(args: Namespace) -> None:
-    print("Commands:\n\nrun a command with -h as the only argument for more info on that specific command.\n\naddcurrency [money, eridium, vaultcard1tickets, vaultcard2tickets, vaultcard3tickets] [amount]\ngive5levels\nspawnitems\nspawnitemfrompool [item pool] [amount to drop]\nfixconsole\ncatpls [args]\ncatscale\ncatscalex\ncatscaley\ncatscreen\nnomorecat")
+    print("Commands:\n\nrun a command with -h as the only argument for more info on that specific command.\n\naddcurrency [money, eridium, vaultcard1tickets, vaultcard2tickets, vaultcard3tickets, vaultcard4tickets, vaultcard5tickets] [amount]\ngive5levels\nspawnitems\nspawnitemfrompool [item pool] [amount to drop]\nfixconsole\ncatpls [args]\ncatscale\ncatscalex\ncatscaley\ncatscreen\nnomorecat")
     return None
 
-@command("addcurrency", description="Add to these currencies: money, eridium, vaultcard1tickets, vaultcard2tickets, vaultcard3tickets")
+@command("addcurrency", description="Add to these currencies: money, eridium, Mercenary Day (vaultcard1tickets, vc1), Vault x Hunter (vaultcard2tickets, vc2), Arcade Invaders (vaultcard3tickets, vc3), Desert Dreams (vaultcard4tickets, vc4), Warped & Weird (vaultcard5tickets, vc5)")
 def AddCurrency(args: Namespace) -> None:
     if args.currency == "money":
         index = 0
@@ -31,7 +31,7 @@ def AddCurrency(args: Namespace) -> None:
             index += 1
         get_pc().Server_AddCurrency(get_pc().CurrencyManager.currencies[index].type, int(args.amount))
         print(f"[Bonk Utilities] Added {args.amount} Eridium")
-    elif args.currency == "vaultcard1tickets":
+    elif args.currency in ("vaultcard1tickets", "vc1"):
         index = 0
         for currency in get_pc().CurrencyManager.currencies:
             if currency.type.Name == "VaultCard01_Tokens":
@@ -39,7 +39,7 @@ def AddCurrency(args: Namespace) -> None:
             index += 1
         get_pc().Server_AddCurrency(get_pc().CurrencyManager.currencies[index].type, int(args.amount))
         print(f"[Bonk Utilities] Added {args.amount} Mercenary Day Tickets")
-    elif args.currency == "vaultcard2tickets":
+    elif args.currency in ("vaultcard2tickets", "vc2"):
         index = 0
         for currency in get_pc().CurrencyManager.currencies:
             if currency.type.Name == "VaultCard02_Tokens":
@@ -47,7 +47,7 @@ def AddCurrency(args: Namespace) -> None:
             index += 1
         get_pc().Server_AddCurrency(get_pc().CurrencyManager.currencies[index].type, int(args.amount))
         print(f"[Bonk Utilities] Added {args.amount} Vault x Hunter Tickets")
-    elif args.currency == "vaultcard3tickets":
+    elif args.currency in ("vaultcard3tickets", "vc3"):
         index = 0
         for currency in get_pc().CurrencyManager.currencies:
             if currency.type.Name == "VaultCard03_Tokens":
@@ -55,6 +55,22 @@ def AddCurrency(args: Namespace) -> None:
             index += 1
         get_pc().Server_AddCurrency(get_pc().CurrencyManager.currencies[index].type, int(args.amount))
         print(f"[Bonk Utilities] Added {args.amount} Arcade Invaders Tickets")
+    elif args.currency in ("vaultcard4tickets", "vc4"):
+            index = 0
+            for currency in get_pc().CurrencyManager.currencies:
+                if currency.type.Name == "VaultCard04_Tokens":
+                    break
+                index += 1
+            get_pc().Server_AddCurrency(get_pc().CurrencyManager.currencies[index].type, int(args.amount))
+            print(f"[Bonk Utilities] Added {args.amount} Desert Dreams Tickets")
+    elif args.currency in ("vaultcard5tickets", "vc5"):
+                index = 0
+                for currency in get_pc().CurrencyManager.currencies:
+                    if currency.type.Name == "VaultCard05_Tokens":
+                        break
+                    index += 1
+                get_pc().Server_AddCurrency(get_pc().CurrencyManager.currencies[index].type, int(args.amount))
+                print(f"[Bonk Utilities] Added {args.amount} Warped & Weird Tickets")
     else:
         print(f"Currency {args.currency} not found.")
     return None

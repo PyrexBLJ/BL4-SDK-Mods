@@ -2,6 +2,7 @@ import unrealsdk
 from mods_base import build_mod, get_pc, keybind, hook, ENGINE, SliderOption, SpinnerOption, BoolOption, Game, NestedOption, EInputEvent, command
 from unrealsdk.hooks import Type, Block
 from unrealsdk.unreal import BoundFunction, UObject, WrappedStruct, IGNORE_STRUCT
+#from ui_utils import show_hud_message
 from typing import Any
 from threading import Thread
 import time
@@ -45,6 +46,7 @@ def setFOV(_: SliderOption, new_value: int) -> None:
 
 def notify(text: str) -> None:
     print(f"[Bonk Utilities] {text}")
+    #show_hud_message("Bonk Utilities", text, 3.5)
     return None
 
 def checkCheatClass() -> None:
